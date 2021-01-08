@@ -1,0 +1,72 @@
+//@version=4
+//42quants.com
+//by @42piratas
+
+strategy("Grid Bots Screening", overlay=true)
+
+// INPUTS
+lookBack = input(title="Lookback", type=input.integer, defval=24, minval=2)
+range = input(title="Upper & Lower Range", type=input.integer, defval=4, minval=10)
+
+// SCREENING TARGETS
+// TODO
+
+// INDICATORS & VARIABLES
+// TODO: maybe adding a MV to avoid down trends? (or something similar)
+
+var upperLimitLine = line.new(na, na, na, na, color=color.red,  width= 3, extend=extend.none)
+var lowerLimitLine = line.new(na, na, na, na, color=color.red,  width= 3, extend=extend.none)
+var upperRangeLine = line.new(na, na, na, na, color=color.blue, width= 1, extend=extend.none)
+var lowerRangeLine = line.new(na, na, na, na, color=color.blue, width= 1, extend=extend.none)
+
+highestHigh = highest(high, lookBack)
+lowestLow = lowest(low, lookBack)
+
+xAxisStartsAt = bar_index[lookBack]
+xAxisFinishesAt = bar_index
+
+upperLimit = highestHigh
+lowerLimit = lowestLow
+
+upperRange = ((highestHigh - lowestLow)/range) + lowestLow
+lowerRange = highestHigh - ((highestHigh - lowestLow)/range)
+
+closeAboveUpperRange = close > upperRange
+closeBelowLowerRange = close < lowerRange
+
+occurrencesAboveTotal   = sum(closeAboveUpperRange ? 1 : 0, lookBack)
+occurrencesAboveSecondHalf = sum(closeAboveUpperRange ? 1 : 0, lookBack/2)
+occurrencesAboveFirstHalf  = occurrencesAboveTotal - occurrencesAboveSecondHalf
+
+occurrencesBelowTotal   = sum(closeAboveUpperRange ? 1 : 0, lookBack)
+occurrencesBelowSecondHalf = sum(closeAboveUpperRange ? 1 : 0, lookBack/2)
+occurrencesBelowFirstHalf  = occurrencesBelowTotal - occurrencesBelowSecondHalf
+
+// STRATEGY 
+triggerA = occurrencesAboveFirstHalf ? true : false
+triggerB = occurrencesAboveSecondHalf ? true : false
+triggerC = occurrencesBelowFirstHalf ? true : false
+triggerD = crossunder(close, lowerRange
+
+condition = triggerA and triggerB and triggerC and triggerD
+
+// PAINTBRUSH
+line.set_xy1(upperLimitLine, xAxisStartsAt, upperLimit)
+line.set_xy2(upperLimitLine, xAxisFinishesAt, upperLimit)
+
+line.set_xy1(lowerLimitLine, xAxisStartsAt, lowerLimit)
+line.set_xy2(lowerLimitLine, xAxisFinishesAt, lowerLimit)
+
+line.set_xy1(upperRangeLine, xAxisStartsAt, upperRange)
+line.set_xy2(upperRangeLine, xAxisFinishesAt, upperRange)
+
+line.set_xy1(lowerRangeLine, xAxisStartsAt, lowerRange)
+line.set_xy2(lowerRangeLine, xAxisFinishesAt, lowerRange)
+
+plotchar(condition)
+
+// SIGNALING
+// TODO
+
+// ALERTS
+// TODO
