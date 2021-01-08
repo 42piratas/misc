@@ -31,22 +31,22 @@ lowerLimit = lowestLow
 upperRange = ((highestHigh - lowestLow)/range) + lowestLow
 lowerRange = highestHigh - ((highestHigh - lowestLow)/range)
 
-closeAboveUpperRange = close > upperRange
-closeBelowLowerRange = close < lowerRange
+HighAboveUpperRange = high > upperRange
+LowBelowLowerRange = low < lowerRange
 
-occurrencesAboveTotal   = sum(closeAboveUpperRange ? 1 : 0, lookBack)
-occurrencesAboveSecondHalf = sum(closeAboveUpperRange ? 1 : 0, lookBack/2)
+occurrencesAboveTotal   = sum(HighAboveUpperRange ? 1 : 0, lookBack)
+occurrencesAboveSecondHalf = sum(HighAboveUpperRange ? 1 : 0, lookBack/2)
 occurrencesAboveFirstHalf  = occurrencesAboveTotal - occurrencesAboveSecondHalf
 
-occurrencesBelowTotal   = sum(closeAboveUpperRange ? 1 : 0, lookBack)
-occurrencesBelowSecondHalf = sum(closeAboveUpperRange ? 1 : 0, lookBack/2)
+occurrencesBelowTotal   = sum(LowBelowLowerRange ? 1 : 0, lookBack)
+occurrencesBelowSecondHalf = sum(LowBelowLowerRange ? 1 : 0, lookBack/2)
 occurrencesBelowFirstHalf  = occurrencesBelowTotal - occurrencesBelowSecondHalf
 
 // STRATEGY 
-triggerA = occurrencesAboveFirstHalf ? true : false
-triggerB = occurrencesAboveSecondHalf ? true : false
-triggerC = occurrencesBelowFirstHalf ? true : false
-triggerD = crossunder(close, lowerRange
+triggerA = occurrencesAboveFirstHalf >= 1 ? true : false
+triggerB = occurrencesAboveSecondHalf >= 1 ? true : false
+triggerC = occurrencesBelowFirstHalf >= 1 ? true : false
+triggerD = crossunder(low, lowerRange)
 
 condition = triggerA and triggerB and triggerC and triggerD
 
