@@ -1,0 +1,163 @@
+//@version=4
+//42quants.com
+//by @42piratas
+
+strategy("Grid Bots Screening", overlay=true)
+
+// INPUTS
+
+lookBack = input(title="Lookback", type=input.integer, defval=24, minval=2)
+range = input(title="Upper & Lower Range %", type=input.integer, defval=25, minval=10)
+
+screenList  = input(false, "═════════ Screening ════════")
+s01 = input('BINANCE:BTCUSDT', type=input.symbol)
+s02 = input('BINANCE:ETHBTC', type=input.symbol)
+s03 = input('BINANCE:XRPBTC', type=input.symbol)
+s04 = input('BINANCE:LTCBTC', type=input.symbol)
+s05 = input('BINANCE:BCHBTC', type=input.symbol)
+
+s06 = input('BINANCE:LINKBTC', type=input.symbol)
+s07 = input('BINANCE:ADABTC', type=input.symbol)
+s08 = input('BINANCE:DOTBTC', type=input.symbol)
+s09 = input('BINANCE:BNBBTC', type=input.symbol)
+s10 = input('BINANCE:XLMBTC', type=input.symbol)
+
+s11 = input('BINANCE:SNXBTC', type=input.symbol)
+s12 = input('BINANCE:XMRBTC', type=input.symbol)
+s13 = input('BINANCE:EOSBTC', type=input.symbol)
+s14 = input('BINANCE:XEMBTC', type=input.symbol)
+s15 = input('BINANCE:WBTCBTC', type=input.symbol)
+
+s16 = input('BINANCE:TRXBTC', type=input.symbol)
+s17 = input('BINANCE:XTZBTC', type=input.symbol)
+s18 = input('BINANCE:COMPBTC', type=input.symbol)
+s19 = input('BINANCE:FILBTC', type=input.symbol)
+s20 = input('BINANCE:MKRBTC', type=input.symbol)
+
+// INDICATORS & VARIABLES
+
+var upperLimitLine = line.new(na, na, na, na, color=color.red,  width= 3, extend=extend.none)
+var lowerLimitLine = line.new(na, na, na, na, color=color.red,  width= 3, extend=extend.none)
+var upperRangeLine = line.new(na, na, na, na, color=color.blue, width= 2, extend=extend.none)
+var lowerRangeLine = line.new(na, na, na, na, color=color.green, width= 2, extend=extend.none)
+
+range := 100/range
+
+highestHigh = highest(high, lookBack)
+lowestLow = lowest(low, lookBack)
+
+xAxisStartsAt = bar_index[lookBack]
+xAxisFinishesAt = bar_index
+
+upperLimit = highestHigh
+lowerLimit = lowestLow
+
+upperRange = highestHigh - ((highestHigh - lowestLow)/range) 
+lowerRange = ((highestHigh - lowestLow)/range) + lowestLow
+
+HighAboveUpperRange = high > upperRange
+LowBelowLowerRange = low < lowerRange
+
+occurrencesAboveTotal   = sum(HighAboveUpperRange ? 1 : 0, lookBack)
+occurrencesAboveSecondHalf = sum(HighAboveUpperRange ? 1 : 0, lookBack/2)
+occurrencesAboveFirstHalf  = occurrencesAboveTotal - occurrencesAboveSecondHalf
+
+occurrencesBelowTotal   = sum(LowBelowLowerRange ? 1 : 0, lookBack)
+occurrencesBelowSecondHalf = sum(LowBelowLowerRange ? 1 : 0, lookBack/2)
+occurrencesBelowFirstHalf  = occurrencesBelowTotal - occurrencesBelowSecondHalf
+
+// STRATEGY 
+
+triggerA = occurrencesAboveFirstHalf >= 1 ? true : false
+triggerB = occurrencesAboveSecondHalf >= 1 ? true : false
+triggerC = occurrencesBelowFirstHalf >= 1 ? true : false
+triggerD = crossunder(low, lowerRange)
+
+condition = triggerA and triggerB and triggerC and triggerD
+
+// SCREENING
+
+c01 = security(s01, timeframe.period, condition)
+c02 = security(s02, timeframe.period, condition)
+c03 = security(s03, timeframe.period, condition)
+c04 = security(s04, timeframe.period, condition)
+c05 = security(s05, timeframe.period, condition)
+
+c06 = security(s06, timeframe.period, condition)
+c07 = security(s07, timeframe.period, condition)
+c08 = security(s08, timeframe.period, condition)
+c09 = security(s09, timeframe.period, condition)
+c10 = security(s10, timeframe.period, condition)
+
+c11 = security(s11, timeframe.period, condition)
+c12 = security(s12, timeframe.period, condition)
+c13 = security(s13, timeframe.period, condition)
+c14 = security(s14, timeframe.period, condition)
+c15 = security(s15, timeframe.period, condition)
+
+c16 = security(s16, timeframe.period, condition)
+c17 = security(s17, timeframe.period, condition)
+c18 = security(s18, timeframe.period, condition)
+c19 = security(s19, timeframe.period, condition)
+c20 = security(s20, timeframe.period, condition)
+
+// PAINTBRUSH
+
+line.set_xy1(upperLimitLine, xAxisStartsAt, upperLimit)
+line.set_xy2(upperLimitLine, xAxisFinishesAt, upperLimit)
+
+line.set_xy1(lowerLimitLine, xAxisStartsAt, lowerLimit)
+line.set_xy2(lowerLimitLine, xAxisFinishesAt, lowerLimit)
+
+line.set_xy1(upperRangeLine, xAxisStartsAt, upperRange)
+line.set_xy2(upperRangeLine, xAxisFinishesAt, upperRange)
+
+line.set_xy1(lowerRangeLine, xAxisStartsAt, lowerRange)
+line.set_xy2(lowerRangeLine, xAxisFinishesAt, lowerRange)
+
+plotchar(condition)
+
+// SCREENING LABEL 
+
+scr_label = 'Screener: \n##########\n'
+
+scr_label := c01 ? scr_label + s01 + '\n' : scr_label
+scr_label := c02 ? scr_label + s02 + '\n' : scr_label
+scr_label := c03 ? scr_label + s03 + '\n' : scr_label
+scr_label := c04 ? scr_label + s04 + '\n' : scr_label
+scr_label := c05 ? scr_label + s05 + '\n' : scr_label
+
+scr_label := c06 ? scr_label + s06 + '\n' : scr_label
+scr_label := c07 ? scr_label + s07 + '\n' : scr_label
+scr_label := c08 ? scr_label + s08 + '\n' : scr_label
+scr_label := c09 ? scr_label + s09 + '\n' : scr_label
+scr_label := c10 ? scr_label + s10 + '\n' : scr_label
+
+scr_label := c11 ? scr_label + s11 + '\n' : scr_label
+scr_label := c12 ? scr_label + s12 + '\n' : scr_label
+scr_label := c13 ? scr_label + s13 + '\n' : scr_label
+scr_label := c14 ? scr_label + s14 + '\n' : scr_label
+scr_label := c15 ? scr_label + s15 + '\n' : scr_label
+
+scr_label := c16 ? scr_label + s16 + '\n' : scr_label
+scr_label := c17 ? scr_label + s17 + '\n' : scr_label
+scr_label := c18 ? scr_label + s18 + '\n' : scr_label
+scr_label := c19 ? scr_label + s19 + '\n' : scr_label
+scr_label := c20 ? scr_label + s20 + '\n' : scr_label
+
+lab_l = label.new(
+          bar_index, 0, scr_label, 
+          color=color.gray, 
+          textcolor=color.black, 
+          style =  label.style_labeldown,
+          yloc = yloc.price)
+
+label.delete(lab_l[1])
+
+plot(0, transp = 100)
+
+// SIGNALING
+// TODO
+
+// ALERTS
+// TODO
