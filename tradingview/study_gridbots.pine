@@ -1,0 +1,70 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+
+//@version=4
+//42quants.com
+//@42piratas
+
+study("Grid Bots Screening", overlay=true)
+
+// INPUTS
+
+lookBack = input(title="Lookback", type=input.integer, defval=30, minval=2)
+range = input(title="Upper & Lower Range %", type=input.integer, defval=25, minval=10)
+
+// INDICATORS & VARIABLES
+
+var upperLimitLine = line.new(na, na, na, na, color=color.red,  width= 3, extend=extend.none)
+var lowerLimitLine = line.new(na, na, na, na, color=color.black,  width= 3, extend=extend.none)
+var upperRangeLine = line.new(na, na, na, na, color=color.blue, width= 2, extend=extend.none)
+var lowerRangeLine = line.new(na, na, na, na, color=color.green, width= 2, extend=extend.none)
+
+range := 100/range
+
+highestHigh = highest(high, lookBack)
+lowestLow = lowest(low, lookBack)
+
+xAxisStartsAt = bar_index[lookBack]
+xAxisFinishesAt = bar_index
+
+upperLimit = highestHigh
+lowerLimit = lowestLow
+
+upperRange = highestHigh - ((highestHigh - lowestLow)/range) 
+lowerRange = ((highestHigh - lowestLow)/range) + lowestLow
+
+HighAboveUpperRange = high > upperRange
+LowBelowLowerRange = low < lowerRange
+
+occurrencesAboveTotal   = sum(HighAboveUpperRange ? 1 : 0, lookBack)
+occurrencesAboveSecondHalf = sum(HighAboveUpperRange ? 1 : 0, lookBack/2)
+occurrencesAboveFirstHalf  = occurrencesAboveTotal - occurrencesAboveSecondHalf
+
+occurrencesBelowTotal   = sum(LowBelowLowerRange ? 1 : 0, lookBack)
+occurrencesBelowSecondHalf = sum(LowBelowLowerRange ? 1 : 0, lookBack/2)
+occurrencesBelowFirstHalf  = occurrencesBelowTotal - occurrencesBelowSecondHalf
+
+// STUDY
+
+triggerA = occurrencesAboveFirstHalf >= 1 ? true : false
+triggerB = occurrencesAboveSecondHalf >= 1 ? true : false
+triggerC = occurrencesBelowFirstHalf >= 1 ? true : false
+triggerD = crossunder(low, lowerRange)
+
+condition = triggerA and triggerB and triggerC and triggerD
+
+// PAINTBRUSH
+
+line.set_xy1(upperLimitLine, xAxisStartsAt, upperLimit)
+line.set_xy2(upperLimitLine, xAxisFinishesAt, upperLimit)
+
+line.set_xy1(lowerLimitLine, xAxisStartsAt, lowerLimit)
+line.set_xy2(lowerLimitLine, xAxisFinishesAt, lowerLimit)
+
+line.set_xy1(upperRangeLine, xAxisStartsAt, upperRange)
+line.set_xy2(upperRangeLine, xAxisFinishesAt, upperRange)
+
+line.set_xy1(lowerRangeLine, xAxisStartsAt, lowerRange)
+line.set_xy2(lowerRangeLine, xAxisFinishesAt, lowerRange)
+
+plotchar(condition)
+
